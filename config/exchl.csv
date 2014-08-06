@@ -1,0 +1,8 @@
+exch,apiurl,obpath,trdpath
+bitstamp,https://www.bitstamp.net,/api/order_book/, 
+bitfinex,https://api.bitfinex.com,/v1/book/btcusd,
+hitbtc,http://api.hitbtc.com,/api/1/public/BTCUSD/orderbook,
+btce,https://btc-e.com,/api/2/btc_usd/depth,
+lakebtc,https://www.lakebtc.com,/api_v1/bcorderbook,
+itbit,https://www.itbit.com,/api/v2/markets/XBTUSD/orders/,
+kraken,https://api.kraken.com,/0/public/Depth?pair=XBTUSD,
