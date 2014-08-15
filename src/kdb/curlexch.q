@@ -1,4 +1,4 @@
-\l json.k
+\l ./src/kdb/json.k
 \c 30 120
 quote:([]time:`time$();sym:`$();exch:`$();bpx:`float$();apx:`float$();bsz:`float$();asz:`float$();bprcs:();aprcs:();bszs:();aszs:();bnm:();anm:();timestamp:`timestamp$();exchtm:`timestamp$());
 maxamt:100000;
@@ -21,7 +21,7 @@ parseq1:{[exch;d]
 	aprcs:offerl 0; aszs:offerl 1;
 	quoteupsrt[exch;bprcs;bszs;aprcs;aszs;.z.P];
 	}
-bitstamp:parseq1[`bitstamp];
+bitstamp:{[e;x] parseq1[`bitstamp] .j.k x;}
 hitbtc:parseq1[`hitbtc];
 itbit:parseq1[`itbit];
 bitfinex:{[d]
@@ -38,6 +38,7 @@ parseq2:{[exch;d]
 	aprcs:offerl 0; aszs:offerl 1;
 	quoteupsrt[exch;bprcs;bszs;aprcs;aszs;.z.P];
 	}
+exchstats:{[e;x] -2"exchstats:";show x};
 btce:parseq2[`btce];
 lakebtc:parseq2[`lakebtc];
 kraken:{[d]
@@ -57,9 +58,8 @@ getmktdata:{[] getexchdata each key exchurl;}
 /getexchdata:{[exch] (value exch) .j.k curlexch exchurl[exch]; }
 getexchdata:{[exch] res:@[curlexch;exchurl[exch];{[x;e] -2"Failed to get exch",string[x];}[exch]]; if[1<count res;(value exch) .j.k res];}
 
-curlinit:(`$"./libcurlkdb")2:(`kx_curl_init;1)
-curlexch:(`$"./libcurlkdb")2:(`kx_curl_exch;1)
-curlinit[`]
+curlexchinit:(`$"./src/c/libcurlkdb")2:(`kx_exch_init;6) /exch,proxyl,cb,urlob,urltrd,pollf
+curlexchinit[`bitstamp;`;`bitstamp;exchurl`bitstamp;`;60]
 
 .ccy.fiat:`USD`EUR;
 .ccy.cryp:`BTC`LTE`XRP;

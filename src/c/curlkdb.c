@@ -19,7 +19,7 @@ struct threadArgs {
    int pollfreq;
    int useproxy;
    double tottime;
-   pthread_mutex_t *mutex;
+   pthread_mutex_t mutex;
    struct MemoryStruct mem;
    char exch[50];
    char oburl[500];
@@ -120,22 +120,26 @@ K kcallback(int pipe) {
     int n,sz,cnt;
 	u_char json[1024*1024];
 	struct threadArgs * targs;
+	char * teststr = "this is a test str";
 	//read from pipe pointer to exch/thread args
-	while (0<(cnt=read(pipe, &targs, sizeof(struct threadArgs *)))) {
-		pthread_mutex_lock(targs->mutex);
+	cnt=read(pipe, &targs, sizeof(struct threadArgs *));
+	if (cnt==sizeof(targs)) {
+		pthread_mutex_lock(&targs->mutex);
 		fprintf(stderr, "pipe read args addr: %x, size:%d\n",targs,sizeof(struct threadArgs *));
-		if (cnt==sizeof(targs)) {
-			char * callbk;
-			fprintf(stderr, "pipe read sz: %d\n",sz);
-			K kdata=kpn((S) targs->mem.memory,targs->mem.size);
-			K sdata=kf(targs->tottime);
-			K res = k(0, targs->kcallbk, targs->exch,kdata,(K) 0);
-			res = k(0, "exchstats", targs->exch,sdata,(K) 0);
-		} else {
-			fprintf(stderr, "Something wrong!! Packet length:%0d \n", cnt); 
-		}
-		pthread_mutex_unlock(targs->mutex);
+		fprintf(stderr, "pipe read cnt: %d\n",cnt);
+		K kdata=kpn(targs->mem.memory,targs->mem.size);
+		//K kdata=kpn((S) teststr,10);
+		K sdata=kf(targs->tottime);
+		fprintf(stderr, "callback : %s\n",targs->kcallbk);
+		K res = k(0, targs->kcallbk, targs->exch,kdata,(K) 0);
+		res = k(0, "exchstats", targs->exch,sdata,(K) 0);
+		fprintf(stderr, "pipe unlock: %s\n",targs->kcallbk);
+		pthread_mutex_unlock(&targs->mutex);
+		fprintf(stderr, "pipe unlock done: %s\n",targs->kcallbk);
+	} else {
+		fprintf(stderr, "Something wrong!! Packet length:%0d \n", cnt); 
 	}
+	return (K)0;
 }
 
 char * getcurlproxyurl(struct threadArgs * myargs) {
@@ -150,10 +154,11 @@ void *exchthread(void *args) {
 	myargs->mem.memory = malloc(50*1024*1024);  /* will be grown as needed by the realloc above */ 
 	myargs->mem.size = 0;    /* no data at this point */ 
 	curl_global_init(CURL_GLOBAL_ALL);
-	pthread_mutex_init(myargs->mutex, NULL);
+	pthread_mutex_init(&myargs->mutex, NULL);
 	CURL *curl;
 	char * curproxyurl;
 	int curproxyport;
+	fprintf(stderr, "start loop exch: %s\n",myargs->exch);
 	while (1) {
 		myargs->mem.size = 0;    /* no data at this point */ 
 		/* init the curl session */ 
@@ -174,9 +179,11 @@ void *exchthread(void *args) {
 		curl_easy_setopt(curl, CURLOPT_TIMEOUT, 20);
 		/* specify URL to get */ 
 		curl_easy_setopt(curl, CURLOPT_URL, myargs->oburl);
-		pthread_mutex_lock(myargs->mutex);
+		pthread_mutex_lock(&myargs->mutex);
 		/* get it! */ 
+		fprintf(stderr, "loop perform exch: %s\n",myargs->exch);
 		res = curl_easy_perform(curl);
+		fprintf(stderr, "loop perform done exch: %s\n",myargs->exch);
 		//get curl opts for time taken
 		/* check for errors */ 
 		if(res != CURLE_OK) {
@@ -189,12 +196,15 @@ void *exchthread(void *args) {
 			write(myargs->kpipe[1],&myargs,sizeof(struct threadArgs *));
 			res = curl_easy_getinfo(curl, CURLINFO_TOTAL_TIME, &myargs->tottime);
 		}
-	    pthread_mutex_unlock(myargs->mutex);
+		fprintf(stderr, "loop unlock exch: %s\n",myargs->exch);
+	    pthread_mutex_unlock(&myargs->mutex);
+		fprintf(stderr, "loop unlock done exch: %s\n",myargs->exch);
 		/* cleanup curl stuff */ 
 		curl_easy_cleanup(curl);
 		if (myargs->pollfreq) {
 			sleep(myargs->pollfreq);
 		}
+		fprintf(stderr, "loop bottom exch: %s\n",myargs->exch);
 	}
 }
 
