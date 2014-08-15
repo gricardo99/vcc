@@ -74,7 +74,7 @@ loadfees:{[fnm]
 	tmp: ("SSFFFFFFF";enlist csv) 0: read0 hsym `$fnm;
 	`fees upsert `timestamp xcols update timestamp:.z.P from tmp;
 	}
-loadfees["/Users/gabriel/Documents/cryptoC/kdb/ckdb/src/fees.csv"];
+loadfees["./config/fees.csv"];
 arbopts:([]time:`time$();sym:`$();buyexch:`$();sellexch:`$();amount:`float$();wbpx:`float$();wspx:`float$();val:`float$();gpnl:`float$();fees:`float$();nroi:`float$());
 getarbstm:{[tm;val;exch1;exch2]
 	exch1q:quote asof `exch`time!(exch1;tm);
