@@ -15,7 +15,6 @@ int thrdcnt = 0;
 int thread_cnt;
 struct threadArgs {
    int kpipe[2];
-   int skpipe[2];
    int pollfreq;
    int useproxy;
    double tottime;
@@ -126,10 +125,8 @@ K kcallback(int pipe) {
 		K kdata=kpn(targs->mem.memory,targs->mem.size);
 		K sdata=kf(targs->tottime);
 		K exch=ks(ss(targs->exch));
-		fprintf(stderr, "kcallback() %s, size:%d\n",targs->kcallbk,targs->mem.size);
-		K res = k(0, targs->kcallbk, exch,kdata,(K) 0);
-		K exch2=ks(ss(targs->exch));
-		res = k(0, "exchstats", exch2,sdata,(K) 0);
+		K res = k(0, targs->kcallbk, exch,kdata,sdata,(K) 0);
+		r0(res);
 		pthread_mutex_unlock(&targs->mutex);
 	} else {
 		fprintf(stderr, "Something wrong!! Packet length:%0d \n", cnt); 
@@ -146,9 +143,8 @@ int getcurlproxyport(struct threadArgs * myargs) {
 
 void *exchthread(void *args) {
 	struct threadArgs * myargs = (struct threadArgs *)args;
-	myargs->mem.memory = malloc(5*1024*1024);  /* will be grown as needed by the realloc above */ 
+	myargs->mem.memory = malloc(50*1024*1024);  /* will be grown as needed by the realloc above */ 
 	myargs->mem.size = 0;    /* no data at this point */ 
-	curl_global_init(CURL_GLOBAL_ALL);
 	pthread_mutex_init(&myargs->mutex, NULL);
 	CURL *curl;
 	char * curproxyurl;
@@ -176,7 +172,7 @@ void *exchthread(void *args) {
 		curl_easy_setopt(curl, CURLOPT_URL, myargs->oburl);
 		pthread_mutex_lock(&myargs->mutex);
 		/* get it! */ 
-		fprintf(stderr, "curl_easy_perform() %s\n",myargs->oburl);
+		//fprintf(stderr, "curl_easy_perform() %s\n",myargs->oburl);
 		res = curl_easy_perform(curl);
 		//get curl opts for time taken
 		/* check for errors */ 
@@ -209,17 +205,15 @@ extern K kx_exch_init(K exchnm,K proxyl, K cb,K urlob, K urltrd, K pollf) {
 	strcpy (args->kcallbk,cb->s);
 	args->useproxy = 0;
 	args->pollfreq = pollf->i;
-	if (!curl_glob_init) curl_global_init(CURL_GLOBAL_ALL);
+	if (!curl_glob_init)  {
+		curl_global_init(CURL_GLOBAL_ALL);
+		curl_glob_init=1;
+	}
     if (0 > pipe(args->kpipe)) {
 		fprintf(stderr, "pipe error, failed: %s\n",exchnm->s);
 		return ks((S) "ERROR");
     }
-    if (0 > pipe(args->skpipe)) {
-		fprintf(stderr, "pipe error, failed: %s\n",exchnm->s);
-		return ks((S) "ERROR");
-    }
 	sd1(args->kpipe[0], kcallback); //main data pipe
-	sd1(args->skpipe[0], kcallback); //stats pipe
     int rc = pthread_create(&threads[thrdcnt], NULL, exchthread, (void *) args);
 	thrdcnt++;
 	return ks((S) "OK");

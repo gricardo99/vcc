@@ -1,6 +1,8 @@
 \l ./src/kdb/json.k
 \c 30 120
 quote:([]time:`time$();sym:`$();exch:`$();bpx:`float$();apx:`float$();bsz:`float$();asz:`float$();bprcs:();aprcs:();bszs:();aszs:();bnm:();anm:();timestamp:`timestamp$();exchtm:`timestamp$());
+curltottime:([] exch:`$();tottime:`float$();timestamp:`timestamp$());
+exchstats:{[e;x] `curltottime upsert (e;x;.z.P);};
 maxamt:100000;
 valatrisk:10000;
 exchl:`bitstamp`bitfinex`hitbtc`btce`lakebtc`itbit`kraken`okcoin`cryptsy;
@@ -14,35 +16,37 @@ quoteupsrt:{[exch;bprcs;bszs;aprcs;aszs;exchtm]
 	apx:first aprcs;asz:first aszs;
 	`quote upsert (.z.T;`BTCUSD;exch;bpx;apx;bsz;asz;blmt#bprcs;almt#aprcs;blmt#bszs;almt#aszs;();();.z.P;exchtm);
 	}
-parseq1:{[exch;x] d:.j.k x;
+parseq1:{[exch;x;s] d:.j.k x;
+	exchstats[exch;s];
 	bidl:flip "F"$d`bids;
 	bprcs:bidl 0; bszs:bidl 1;
 	offerl:flip "F"$d`asks;
 	aprcs:offerl 0; aszs:offerl 1;
 	quoteupsrt[exch;bprcs;bszs;aprcs;aszs;.z.P];
 	}
-bitstamp:{[exch;d] .bitstamp.res:d; parseq1[exch;d]; }
+bitstamp:parseq1;
 hitbtc:parseq1;
 itbit:parseq1;
-bitfinex:{[exch;d] d:.j.k d;
+bitfinex:{[exch;d;s] d:.j.k d;
+	exchstats[exch;s];
 	bprcs:"F"$(d`bids)`price;
 	bszs:"F"$(d`bids)`amount;
 	aprcs:"F"$(d`asks)`price;
 	aszs:"F"$(d`asks)`amount;
 	quoteupsrt[`bitfinex;bprcs;bszs;aprcs;aszs;.z.P];
 	}
-parseq2:{[exch;d] d:.j.k d;
+parseq2:{[exch;d;s] d:.j.k d;
+	exchstats[exch;s];
 	bidl:flip d`bids;
 	bprcs:bidl 0; bszs:bidl 1;
 	offerl:flip d`asks;
 	aprcs:offerl 0; aszs:offerl 1;
 	quoteupsrt[exch;bprcs;bszs;aprcs;aszs;.z.P];
 	}
-curltottime:([] exch:`$();tottime:`float$();timestamp:`timestamp$());
-exchstats:{[e;x] 0N!x;0N!e;`curltottime upsert (e;x;.z.P); -2"post upsert:",string[e];};
 btce:parseq2;
 lakebtc:parseq2;
-kraken:{[exch;d] d:.j.k d;
+kraken:{[exch;d;s] d:.j.k d;
+	exchstats[exch;s];
 	bprcs:bszs:aprcs:aszs:enlist 0n;
 	if[count d;
 	   bprcs:"F"$(bl:flip raze (value (d`result))`bids) 0;
@@ -52,8 +56,9 @@ kraken:{[exch;d] d:.j.k d;
 	];
    quoteupsrt[`kraken;bprcs;bszs;aprcs;aszs;.z.P];
 	}
-okcoin:parseq2[`okcoin];
-cryptsy:{[d] d:.j.k ssr[d;"\\";""];
+okcoin:parseq2;
+cryptsy:{[exch;d;s] d:.j.k ssr[d;"\\";""];
+	exchstats[exch;s];
     st:select from (update sumval:sums usdval from select apx:"F"$price,asz:"F"$quantity,usdval:"F"$total from selltab:(((d`return)`markets)`BTC)`sellorders) where sumval<maxamt;
     bt:select from (update sumval:sums usdval from select bpx:"F"$price,bsz:"F"$quantity,usdval:"F"$total from buytab:(((d`return)`markets)`BTC)`buyorders) where sumval<maxamt;
     trades:(((d`return)`markets)`BTC)`recenttrades;
@@ -117,7 +122,6 @@ getarbs:{[val;tm] getarbstm[tm;val] .' arbexchl::(exchcombo) where (not (=) .' e
 
 
 curlexchinit:(`$"./src/c/libcurlkdb")2:(`kx_exch_init;6) /exch,proxyl,cb,urlob,urltrd,pollf
-/{[exch] curlexchinit[exch;`;exch;exchurl exch;`;60] } each key exchurl;
-/{[exch] curlexchinit[exch;`;exch;exchurl exch;`;60] } each `bitstamp;
-curlexchinit[`bitstamp;`;`parseq1;exchurl `bitstamp;`;60] 
-curlexchinit[`bitfinex;`;`bitfinex;exchurl `bitfinex;`;60] 
+{[exch] curlexchinit[exch;`;exch;exchurl exch;`;60] } each key exchurl
+/curlexchinit[`bitstamp;`;`bitstamp;exchurl `bitstamp;`;60] 
+/curlexchinit[`bitfinex;`;`bitfinex;exchurl `bitfinex;`;60] 
