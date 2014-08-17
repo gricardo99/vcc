@@ -86,9 +86,9 @@ loadfees:{[fnm]
 	}
 loadfees["./config/fees.csv"];
 arbopts:([]time:`time$();sym:`$();buyexch:`$();sellexch:`$();amount:`float$();wbpx:`float$();wspx:`float$();val:`float$();gpnl:`float$();fees:`float$();nroi:`float$());
-getarbstm:{[tm;val;exch1;exch2]
-	exch1q:quote asof `exch`time!(exch1;tm);
-	exch2q:quote asof `exch`time!(exch2;tm);
+getarbstm:{[d;tm;val;exch1;exch2]
+	exch1q:(curqt:select from quote where timestamp>(`timestamp$d)) asof `exch`time!(exch1;tm);
+	exch2q:curqt asof `exch`time!(exch2;tm);
 	if[exch1q[`apx]<exch2q[`bpx];
 		getarbqt[val;exch1;exch2;exch1q;exch2q;tm];
 	];
@@ -118,7 +118,7 @@ getallarbs:{[val]
 	tml:exec distinct timestamp from quote where exch=exchtm;
 	getarbsexch[val;tml] .' arbexchl::(exchcombo) where (not (=) .' exchcombo:(key exchurl) cross (key exchurl));
 	}
-getarbs:{[val;tm] getarbstm[tm;val] .' arbexchl::(exchcombo) where (not (=) .' exchcombo:(key exchurl) cross (key exchurl)); }
+getarbs:{[val;d;tm] getarbstm[d;tm;val] .' arbexchl::(exchcombo) where (not (=) .' exchcombo:(key exchurl) cross (key exchurl)); }
 
 
 curlexchinit:(`$"./src/c/libcurlkdb")2:(`kx_exch_init;6) /exch,proxyl,cb,urlob,urltrd,pollf
