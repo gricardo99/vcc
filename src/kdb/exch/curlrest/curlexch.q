@@ -1,11 +1,14 @@
-\l ./src/kdb/util/json.k
+.vct.load "/src/kdb/util/json.k"
+.vct.load "/src/kdb/common/vct_ps.q"
 \c 30 120
 \d .schema
-\l ./src/kdb/common/vcc_schema.q
+.vct.load "/src/kdb/common/vct_schema.q"
 \d .
 quote:.schema.quote;
 curltottime:.schema.curltottime;
-exchstats:{[e;x] `curltottime upsert (.z.T;`BTCUSD;e;x;.z.P);};
+exchstats:{[e;x] `curltottime upsert st:(.z.N;`BTCUSD;e;x;.z.P);
+	.vct.publish[`curltottime;st];
+	};
 maxamt:100000;
 valatrisk:10000;
 exchl:`bitstamp`bitfinex`hitbtc`btce`lakebtc`itbit`kraken`okcoin`cryptsy;
@@ -17,7 +20,8 @@ quoteupsrt:{[exch;bprcs;bszs;aprcs;aszs;exchtm]
 	bpx:first bprcs;bsz:first bszs;
 	almt:((count accumval)-(count accumval where (accumval:(+) scan (*) .' (aprcs ,' aszs))>maxamt));
 	apx:first aprcs;asz:first aszs;
-	`quote upsert (.z.T;`BTCUSD;exch;bpx;apx;bsz;asz;blmt#bprcs;almt#aprcs;blmt#bszs;almt#aszs;();();.z.P;exchtm);
+	`quote upsert qt:(.z.N;`BTCUSD;exch;bpx;apx;bsz;asz;blmt#bprcs;almt#aprcs;blmt#bszs;almt#aszs;();();exchtm;.z.P);
+	.vct.publish[`quote;qt];
 	}
 parseq1:{[exch;x;s] d:.j.k x;
 	exchstats[exch;s];
@@ -68,7 +72,7 @@ cryptsy:{[exch;d;s] d:.j.k ssr[d;"\\";""];
     quoteupsrt[`cryptsy;exec bpx from bt;exec bsz from bt;exec apx from st;exec asz from st;.z.P];
     };
 
-getmktandarbs:{[]getmktdata[]; getarbs[1000f;tm:last exec time from quote];}
+getmktandarbs:{[]getmktdata[]; getarbs[1000f;tm:last exec timestamp from quote];}
 getmktdata:{[] getexchdata each key exchurl;}
 /getexchdata:{[exch] (value exch) .j.k curlexch exchurl[exch]; }
 getexchdata:{[exch] res:@[curlexch;exchurl[exch];{[x;e] -2"Failed to get exch",string[x];}[exch]]; if[1<count res;(value exch) .j.k res];}
@@ -81,17 +85,16 @@ getexchdata:{[exch] res:@[curlexch;exchurl[exch];{[x;e] -2"Failed to get exch",s
 .fees.draw:{[ex;bs;amt] k:(ex;bs);fees[k;`drawmin]|fees[k;`drawf]+fees[k;`drawv]*amt}
 .fees.dep:{[ex;bs;amt] k:(ex;bs);fees[k;`depmin]|fees[k;`depf]+fees[k;`depv]*amt}
 .fees.arb:{[endf;bank;ex1;ex2;amt1;amt2;btcpx] ((amt1%valatrisk)*.fees.draw[bank;`USD;amt1]) + .fees.dep[ex1;`USD;amt1] + .fees.trade[ex1;`USD;amt1] + (btcpx*(.fees.draw[ex1;`BTC;amt1%btcpx] + .fees.dep[ex2;`BTC;amt1%btcpx])) + .fees.trade[ex2;`USD;amt2] + endf*(.fees.draw[ex2;`USD;amt2] + .fees.dep[bank;`USD;amt2])}
-.schema.fees:([]timestamp:`timestamp$();baseccy:`$();exch:`$();drawf:`float$();drawv:`float$();drawmin:`float$();depf:`float$();depv:`float$();depmin:`float$();tradev:`float$());
 fees:`exch`baseccy xkey .schema.fees;
 loadfees:{[fnm]
 	tmp: ("SSFFFFFFF";enlist csv) 0: read0 hsym `$fnm;
-	`fees upsert `timestamp xcols update timestamp:.z.P from tmp;
+	`fees upsert `timestamp xcols update time:.z.N,timestamp:.z.P from tmp;
 	}
-loadfees["./config/fees.csv"];
-arbopts:([]time:`time$();sym:`$();buyexch:`$();sellexch:`$();amount:`float$();wbpx:`float$();wspx:`float$();val:`float$();gpnl:`float$();fees:`float$();nroi:`float$());
+loadfees[.vct.home,"/config/fees.csv"];
+arbopts:.schema.arbopts;
 getarbstm:{[d;tm;val;exch1;exch2]
-	exch1q:(curqt:select from quote where timestamp>(`timestamp$d)) asof `exch`time!(exch1;tm);
-	exch2q:curqt asof `exch`time!(exch2;tm);
+	exch1q:(curqt:select from quote where timestamp>(`timestamp$d)) asof `exch`timestamp!(exch1;tm);
+	exch2q:curqt asof `exch`timestamp!(exch2;tm);
 	if[exch1q[`apx]<exch2q[`bpx];
 		getarbqt[val;exch1;exch2;exch1q;exch2q;tm];
 	];
@@ -123,6 +126,6 @@ getallarbs:{[val]
 	}
 getarbs:{[val;d;tm] getarbstm[d;tm;val] .' arbexchl::(exchcombo) where (not (=) .' exchcombo:(key exchurl) cross (key exchurl)); }
 
-
-curlexchinit:(`$"./src/c/exch/curlrest/libcurlkdb")2:(`kx_exch_init;6) /exch,proxyl,cb,urlob,urltrd,pollf
+curlib:`$.vct.home,"/src/c/exch/curlrest/libcurlkdb";
+curlexchinit:(curlib)2:(`kx_exch_init;6) /exch,proxyl,cb,urlob,urltrd,pollf
 {[exch] curlexchinit[exch;`;exch;exchurl exch;`;60] } each key exchurl
