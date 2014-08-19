@@ -1,8 +1,11 @@
-\l ./src/kdb/json.k
+\l ./src/kdb/util/json.k
 \c 30 120
-quote:([]time:`time$();sym:`$();exch:`$();bpx:`float$();apx:`float$();bsz:`float$();asz:`float$();bprcs:();aprcs:();bszs:();aszs:();bnm:();anm:();timestamp:`timestamp$();exchtm:`timestamp$());
-curltottime:([] exch:`$();tottime:`float$();timestamp:`timestamp$());
-exchstats:{[e;x] `curltottime upsert (e;x;.z.P);};
+\d .schema
+\l ./src/kdb/common/vcc_schema.q
+\d .
+quote:.schema.quote;
+curltottime:.schema.curltottime;
+exchstats:{[e;x] `curltottime upsert (.z.T;`BTCUSD;e;x;.z.P);};
 maxamt:100000;
 valatrisk:10000;
 exchl:`bitstamp`bitfinex`hitbtc`btce`lakebtc`itbit`kraken`okcoin`cryptsy;
@@ -121,7 +124,5 @@ getallarbs:{[val]
 getarbs:{[val;d;tm] getarbstm[d;tm;val] .' arbexchl::(exchcombo) where (not (=) .' exchcombo:(key exchurl) cross (key exchurl)); }
 
 
-curlexchinit:(`$"./src/c/libcurlkdb")2:(`kx_exch_init;6) /exch,proxyl,cb,urlob,urltrd,pollf
+curlexchinit:(`$"./src/c/exch/curlrest/libcurlkdb")2:(`kx_exch_init;6) /exch,proxyl,cb,urlob,urltrd,pollf
 {[exch] curlexchinit[exch;`;exch;exchurl exch;`;60] } each key exchurl
-/curlexchinit[`bitstamp;`;`bitstamp;exchurl `bitstamp;`;60] 
-/curlexchinit[`bitfinex;`;`bitfinex;exchurl `bitfinex;`;60] 
