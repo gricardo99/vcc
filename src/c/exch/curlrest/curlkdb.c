@@ -21,8 +21,8 @@ struct threadArgs {
    pthread_mutex_t mutex;
    struct MemoryStruct mem;
    char exch[50];
-   char oburl[500];
-   char trdurl[500];
+   char url[500];
+   char sym[20];
    char proxyl[500];
    char kcallbk[50];
 };
@@ -125,7 +125,8 @@ K kcallback(int pipe) {
 		K kdata=kpn(targs->mem.memory,targs->mem.size);
 		K sdata=kf(targs->tottime);
 		K exch=ks(ss(targs->exch));
-		K res = k(0, targs->kcallbk, exch,kdata,sdata,(K) 0);
+		K sym=ks(ss(targs->sym));
+		K res = k(0, targs->kcallbk, exch,sym,kdata,sdata,(K) 0);
 		r0(res);
 		pthread_mutex_unlock(&targs->mutex);
 	} else {
@@ -150,7 +151,6 @@ void *exchthread(void *args) {
 	char * curproxyurl;
 	int curproxyport;
 	while (1) {
-
 		myargs->mem.size = 0;    /* no data at this point */ 
 		/* init the curl session */ 
 		curl = curl_easy_init();
@@ -169,16 +169,16 @@ void *exchthread(void *args) {
 		}
 		curl_easy_setopt(curl, CURLOPT_TIMEOUT, 20);
 		/* specify URL to get */ 
-		curl_easy_setopt(curl, CURLOPT_URL, myargs->oburl);
+		curl_easy_setopt(curl, CURLOPT_URL, myargs->url);
 		pthread_mutex_lock(&myargs->mutex);
 		/* get it! */ 
-		//fprintf(stderr, "curl_easy_perform() %s\n",myargs->oburl);
+		//fprintf(stderr, "curl_easy_perform() %s\n",myargs->url);
 		res = curl_easy_perform(curl);
 		//get curl opts for time taken
 		/* check for errors */ 
 		if(res != CURLE_OK) {
 			// mark this proxy as potentially bad
-			fprintf(stderr, "curl_easy_perform() %s, failed: %s\n",myargs->oburl, curl_easy_strerror(res));
+			fprintf(stderr, "curl_easy_perform() %s, failed: %s\n",myargs->url, curl_easy_strerror(res));
 			myargs->tottime=-1.0; //indidate
 		}
 		else {
@@ -196,13 +196,13 @@ void *exchthread(void *args) {
 }
 static int curl_glob_init = 0;
 
-extern K kx_exch_init(K exchnm,K proxyl, K cb,K urlob, K urltrd, K pollf) {
+extern K kx_exch_init(K exchnm,K sym,K proxyl, K cb,K urlob, K urltrd, K pollf) {
     struct threadArgs * args = (struct threadArgs *)malloc(sizeof(struct threadArgs));
-	strcpy (args->exch,exchnm->s);
-	strcpy (args->oburl,urlob->s);
-	strcpy (args->trdurl,urltrd->s);
-	strcpy (args->proxyl,proxyl->s);
-	strcpy (args->kcallbk,cb->s);
+	strcpy(args->exch,exchnm->s);
+	strcpy(args->url,urlob->s);
+	strcpy(args->sym,sym->s);
+	strcpy(args->proxyl,proxyl->s);
+	strcpy(args->kcallbk,cb->s);
 	args->useproxy = 0;
 	args->pollfreq = pollf->i;
 	if (!curl_glob_init)  {

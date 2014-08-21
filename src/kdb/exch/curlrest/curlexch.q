@@ -127,5 +127,5 @@ getallarbs:{[val]
 getarbs:{[val;d;tm] getarbstm[d;tm;val] .' arbexchl::(exchcombo) where (not (=) .' exchcombo:(key exchurl) cross (key exchurl)); }
 
 curlib:`$.vct.home,"/src/c/exch/curlrest/libcurlkdb";
-curlexchinit:(curlib)2:(`kx_exch_init;6) /exch,proxyl,cb,urlob,urltrd,pollf
-{[exch] curlexchinit[exch;`;exch;exchurl exch;`;60] } each key exchurl
+curlexchinit:(curlib)2:(`kx_exch_init;6) /exch,sym,proxyl,cb,url,pollf
+{[exch] curlexchinit[exch;`BTCUSD;`;exch;exchurl exch;`;60] } each key exchurl
