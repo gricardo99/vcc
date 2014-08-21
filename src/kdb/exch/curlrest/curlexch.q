@@ -71,12 +71,32 @@ cryptsy:{[exch;sm;d;s] d:.j.k ssr[d;"\\";""];
     quoteupsrt[`cryptsy;sm;exec bpx from bt;exec bsz from bt;exec apx from st;exec asz from st;.z.P];
     };
 bittrex:{[exch;sm;d;s] d:.j.k d; 
+	exchstats[exch;sm;s];
 	bprcs:((d`result)`buy)`Rate;
 	bszs:((d`result)`buy)`Quantity;
 	aprcs:((d`result)`sell)`Rate;
 	aszs:((d`result)`sell)`Quantity;
 	quoteupsrt[exch;sm;bprcs;bszs;aprcs;aszs;.z.P];
 	};
+anxpro:{[exch;sm;d;s] d:.j.k d; 
+	exchstats[exch;sm;s];
+	bprcs:"F"$((d`data)`bids)`price;
+	bszs:"F"$((d`data)`bids)`amount;
+	aprcs:"F"$((d`data)`asks)`price;
+	aszs:"F"$((d`data)`asks)`amount;
+	quoteupsrt[exch;sm;bprcs;bszs;aprcs;aszs;.z.P];
+	}
+allcoin:{[exch;sm;d;s] d:.j.k d; 
+	exchstats[exch;sm;s];
+	bprcs:key ((d`data)`buy);
+	bszs:value ((d`data)`buy);
+	aprcs:key ((d`data)`sell);
+	aszs:value ((d`data)`sell);
+	quoteupsrt[exch;sm;bprcs;bszs;aprcs;aszs;.z.P];
+	}
+bxinth:parseq1;
+bter:parseq2;
+
 
 loadoburls:{[fnm] .exch.oburl:1!("SS";enlist csv) 0: read0 hsym `$fnm; }
 loadoburls[.vct.home,"/config/oburl.csv"];

@@ -9,3 +9,7 @@ kraken,https://api.kraken.com/0/public/Depth?pair=<SYM>
 okcoin,https://www.okcoin.com/api/depth.do?symbol=<SYM>&ok=1
 cryptsy,http://pubapi1.cryptsy.com/api.php?method=singlemarketdata&marketid=<SYM>
 bittrex,https://bittrex.com/api/v1.1/public/getorderbook?market=<SYM>&type=both&depth=50 
+anxpro,https://anxpro.com/api/2/<SYM>/money/depth/full/
+allcoin,https://www.allcoin.com/api2/depth/<SYM>
+bxinth,https://bx.in.th/api/orderbook/?pairing=<SYM>
+bter,http://data.bter.com/api/1/depth/<SYM>
