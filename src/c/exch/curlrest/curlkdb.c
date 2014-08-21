@@ -196,7 +196,7 @@ void *exchthread(void *args) {
 }
 static int curl_glob_init = 0;
 
-extern K kx_exch_init(K exchnm,K sym,K proxyl, K cb,K urlob, K urltrd, K pollf) {
+extern K kx_exch_init(K exchnm,K sym,K proxyl, K cb,K urlob, K pollf) {
     struct threadArgs * args = (struct threadArgs *)malloc(sizeof(struct threadArgs));
 	strcpy(args->exch,exchnm->s);
 	strcpy(args->url,urlob->s);
