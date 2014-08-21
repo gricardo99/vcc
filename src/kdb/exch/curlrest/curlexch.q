@@ -6,7 +6,7 @@
 \d .
 quote:.schema.quote;
 curltottime:.schema.curltottime;
-exchstats:{[e;x] `curltottime upsert st:(.z.N;sm;e;x;.z.P);
+exchstats:{[e;sm;x] `curltottime upsert st:(.z.N;sm;e;x;.z.P);
 	.vct.publish[`curltottime;st];
 	};
 maxamt:100000;
@@ -128,4 +128,4 @@ getarbs:{[val;d;tm] getarbstm[d;tm;val] .' arbexchl::(exchcombo) where (not (=) 
 
 curlib:`$.vct.home,"/src/c/exch/curlrest/libcurlkdb";
 curlexchinit:(curlib)2:(`kx_exch_init;6) /exch,sym,proxyl,cb,url,pollf
-{[exch] curlexchinit[exch;`BTCUSD;`;exch;exchurl exch;`;60] } each key exchurl
+{[exch] curlexchinit[exch;`BTCUSD;`;exch;exchurl exch;60] } each key exchurl
