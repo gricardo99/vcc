@@ -11,9 +11,7 @@ exchstats:{[e;sm;x] `curltottime upsert st:(.z.N;sm;e;x;.z.P);
 	};
 maxamt:100000;
 valatrisk:10000;
-exchl:`bitstamp`bitfinex`hitbtc`btce`lakebtc`itbit`kraken`okcoin`cryptsy;
 newexchl:enlist `coinsetter;
-exchurl:exchl!(`$"https://www.bitstamp.net/api/order_book/";`$"https://api.bitfinex.com/v1/book/btcusd";`$"http://api.hitbtc.com/api/1/public/BTCUSD/orderbook";`$"https://btc-e.com/api/2/btc_usd/depth";`$"https://www.lakebtc.com/api_v1/bcorderbook";`$"https://www.itbit.com/api/v2/markets/XBTUSD/orders/";`$"https://api.kraken.com/0/public/Depth?pair=XBTUSD";`$"https://www.okcoin.com/api/depth.do?ok=1";`$"http://pubapi1.cryptsy.com/api.php?method=singlemarketdata&marketid=2");
 newexchurl:newexchl!(`$"https://api.coinsetter.com/v1/marketdata/depth?depth=MAX&format=LIST&exchange=COINSETTER");
 quoteupsrt:{[exch;sm;bprcs;bszs;aprcs;aszs;exchtm]
 	blmt:((count accumval)-(count accumval where (accumval:(+) scan (*) .' (bprcs ,' bszs))>maxamt));
@@ -29,7 +27,7 @@ parseq1:{[exch;sm;x;s] d:.j.k x;
 	bprcs:bidl 0; bszs:bidl 1;
 	offerl:flip "F"$d`asks;
 	aprcs:offerl 0; aszs:offerl 1;
-	quoteupsrt[exch;bprcs;bszs;aprcs;aszs;.z.P];
+	quoteupsrt[exch;sm;bprcs;bszs;aprcs;aszs;.z.P];
 	}
 bitstamp:parseq1;
 hitbtc:parseq1;
@@ -66,11 +64,19 @@ kraken:{[exch;sm;d;s] d:.j.k d;
 okcoin:parseq2;
 cryptsy:{[exch;sm;d;s] d:.j.k ssr[d;"\\";""];
 	exchstats[exch;sm;s];
-    st:select from (update sumval:sums usdval from select apx:"F"$price,asz:"F"$quantity,usdval:"F"$total from selltab:(((d`return)`markets)`BTC)`sellorders) where sumval<maxamt;
-    bt:select from (update sumval:sums usdval from select bpx:"F"$price,bsz:"F"$quantity,usdval:"F"$total from buytab:(((d`return)`markets)`BTC)`buyorders) where sumval<maxamt;
-    trades:(((d`return)`markets)`BTC)`recenttrades;
+	mkt:`$3#string sm;
+    st:select from (update sumval:sums usdval from select apx:"F"$price,asz:"F"$quantity,usdval:"F"$total from selltab:(((d`return)`markets) mkt)`sellorders) where sumval<maxamt;
+    bt:select from (update sumval:sums usdval from select bpx:"F"$price,bsz:"F"$quantity,usdval:"F"$total from buytab:(((d`return)`markets) mkt)`buyorders) where sumval<maxamt;
+    trades:(((d`return)`markets) mkt)`recenttrades;
     quoteupsrt[`cryptsy;sm;exec bpx from bt;exec bsz from bt;exec apx from st;exec asz from st;.z.P];
     };
+bittrex:{[exch;sm;d;s] d:.j.k d; 
+	bprcs:((d`result)`buy)`Rate;
+	bszs:((d`result)`buy)`Quantity;
+	aprcs:((d`result)`sell)`Rate;
+	aszs:((d`result)`sell)`Quantity;
+	quoteupsrt[exch;sm;bprcs;bszs;aprcs;aszs;.z.P];
+	};
 
 loadoburls:{[fnm] .exch.oburl:1!("SS";enlist csv) 0: read0 hsym `$fnm; }
 loadoburls[.vct.home,"/config/oburl.csv"];
@@ -82,4 +88,4 @@ getoburl:{[exch;s] cvrturl[.exch.oburl[exch]`oburl;(.exchsyms[exch])[s]`exchsym]
 
 curlib:`$.vct.home,"/src/c/exch/curlrest/libcurlkdb";
 curlexchinit:(curlib)2:(`kx_exch_init;6) /exch,sym,proxyl,cb,url,pollf
-{[exch] {[exch;s] curlexchinit[exch;s;`;exch;getoburl[exch;s];60] }[exch] each exec sym from .exchsyms[exch] } each exchl;
+{[exch] {[exch;s] curlexchinit[exch;s;`;exch;getoburl[exch;s];60] }[exch] each exec sym from .exchsyms[exch] } each exchl
