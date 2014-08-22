@@ -7,7 +7,7 @@ quoteupsrt:{[exch;sm;bprcs;bszs;aprcs;aszs;exchtm]
 	bpx:first bprcs;bsz:first bszs;
 	almt:((count accumval)-(count accumval where (accumval:(+) scan (*) .' (aprcs ,' aszs))>maxamt));
 	apx:first aprcs;asz:first aszs;
-	`quote upsert qt:(.z.N;sm;exch;bpx;apx;bsz;asz;blmt#bprcs;almt#aprcs;blmt#bszs;almt#aszs;`int$();`int$();exchtm;.z.P);
+	 `quote upsert (cols .schema.quote) !  qt:(.z.N;sm;exch;bpx;apx;bsz;asz;blmt#bprcs;almt#aprcs;blmt#bszs;almt#aszs;`int$();`int$();exchtm;.z.P);
 	.vct.publish[`quote;qt];
 	}
 parseq1:{[exch;sm;x;s] d:.j.k x;
