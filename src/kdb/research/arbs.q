@@ -23,6 +23,7 @@ getarbstm:{[d;tm;val;exch1;exch2]
 		getarbqt[val;exch1;exch2;exch1q;exch2q;tm];
 	];
 	}
+amtval:{[prcs;szs;amount] vall:szs*prcs; cnt:0|(count vall) - count (sval) where (sval:sums vall)>amount; $[cnt<2;first prcs;(((cnt-1)#szs),((amount-sval[cnt-1])%prcs[cnt-1])) wavg (((cnt-1)#prcs),(prcs[cnt-1]))]}
 getarbqt:{[val;exch1;exch2;exch1q;exch2q;tm]
 	buypxl:exch1q[`aprcs] where exch1q[`aprcs]<exch2q[`bpx];
 	if[count buypxl;
