@@ -34,7 +34,7 @@ parseq2:{[exch;sm;d;s] d:.j.k d;
 	bidl:flip d`bids;
 	bprcs:bidl 0; bszs:bidl 1;
 	offerl:flip d`asks;
-	aprcs:offerl 0; aszs:offerl 1;
+	aprcs:asc offerl 0; aszs:asc offerl 1;
 	quoteupsrt[exch;sm;bprcs;bszs;aprcs;aszs;.z.P];
 	}
 btce:parseq2;
