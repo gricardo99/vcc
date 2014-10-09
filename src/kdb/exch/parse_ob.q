@@ -51,6 +51,21 @@ kraken:{[exch;sm;d;s] d:.j.k d;
    quoteupsrt[`kraken;sm;bprcs;bszs;aprcs;aszs;.z.P];
 	}
 okcoin:parseq2;
+okcoinws:{[sd;x] /web-socket version (has different parsing)
+	d:.j.k x;
+	{[sd;d]
+	if[`channel in key d;
+		if[(ck:`$raze d[`channel]) in key sd;
+			x:d`data;
+			bidl:flip x`bids;
+			bprcs:bidl 0; bszs:bidl 1;
+			offerl:flip x`asks;
+			aprcs:asc offerl 0; aszs:asc offerl 1;
+			quoteupsrt[`okcoin;sd[ck];bprcs;bszs;aprcs;aszs;.z.P];
+		];
+	];
+	}[sd] each d;
+	}
 cryptsy:{[exch;sm;d;s] d:.j.k ssr[d;"\\";""];
 	exchstats[exch;sm;s];
 	mkt:`$3#string sm;

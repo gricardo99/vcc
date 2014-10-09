@@ -18,4 +18,4 @@ getoburl:{[exch;s] cvrturl[.exch.oburl[exch]`oburl;(.exchsyms[exch])[s]`exchsym]
 
 curlib:`$.vct.home,"/src/c/exch/curlrest/libcurlkdb";
 curlexchinit:(curlib)2:(`kx_exch_init;6) /exch,sym,proxyl,cb,url,pollf
-{[exch] {[exch;s] curlexchinit[exch;s;`;exch;getoburl[exch;s];30] }[exch] each exec sym from .exchsyms[exch] } each exchl
+{[exch] {[exch;s] curlexchinit[exch;s;`;exch;getoburl[exch;s];$[exch in `btce`bitfinex;2;30]] }[exch] each exec sym from .exchsyms[exch] } each exchl
