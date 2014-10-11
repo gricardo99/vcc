@@ -5,3 +5,4 @@ q $VCT_WKSP_HOME/src/kdb/common/vct_proc.q -vct-load src/kdb/database/r.q  -vct-
 sleep 1
 q $VCT_WKSP_HOME/src/kdb/common/vct_proc.q -vct-load src/kdb/exch/curlrest/curlexch.q -vct-tick :5010 </dev/null >$VCT_WKSP_LOGS/curlexch.log 2>&1 &
 q $VCT_WKSP_HOME/src/kdb/common/vct_proc.q -vct-load src/kdb/exch/ws/bitstamp.q  -vct-tick :5010 </dev/null >$VCT_WKSP_LOGS/bitstamp.log 2>&1 &
+q $VCT_WKSP_HOME/src/kdb/common/vct_proc.q -vct-load src/kdb/exch/ws/okcoin.q  -vct-tick :5010 </dev/null >$VCT_WKSP_LOGS/okcoin.log 2>&1 &
