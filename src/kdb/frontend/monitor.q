@@ -9,32 +9,11 @@ upd:{[t;x]
 	 // publish to web pages
  	 .html.pub[`logmsg;lmdata[]]];
   t=`quote;
-	//[insert[`quote;x]; 
+	[ //insert[`quote;x]; 
 	 // publish to web pages
  	 .html.pub[`mychart;x]];
   ()]}
 
-
-// subscribe to heartbeats and log messages on a handle
-/subscribe:{[handle]
-/ subscribedhandles,::handle;
-/ @[handle;(`.ps.subscribe;`heartbeat;`);{.lg.e[`monitor;"failed to subscribe to logmsg on handle ",(string x),": ",y]}[handle]];
-/ @[handle;(`.ps.subscribe;`logmsg;`);{.lg.e[`monitor;"failed to subscribe to logmsg on handle ",(string x),": ",y]}[handle]];
-/ }
- 
-// if a handle is closed, remove it from the list
-.z.pc:{if[y;subscribedhandles::subscribedhandles except y]; x@y}@[value;`.z.pc;{{[x]}}]
-
-// Make the connections and subscribe
-/.servers.startup[]
-/subscribe each (exec w from .servers.SERVERS) except subscribedhandles;
-
-// As new processes become available, try to connect 
-/.servers.addprocscustom:{[connectiontab;procs]
-/ .lg.o[`monitor;"received process update from discovery service for process of type "," " sv string procs,:()];
-/ .servers.retry[];
-/ subscribe each (exec w from .servers.SERVERS) except subscribedhandles;
-/ }
 
 
 // GUI
@@ -65,13 +44,13 @@ monlist:`tick`rtd`hdb
 .hb.hb:`proc`name`sym xkey .schema.heartbeat;
 .hb.storeheartbeat:{[x] `.hb.hb upsert x }
 .hb.ping:{[x] neg[.z.w](`.hb.resp;`;.vct.host;.vct.proc;x)}
-.hb.resp:{[n;h;p;x] `.hb.hb upsert (p;n;.z.N;`;h;`pong;x) }
+.hb.resp:{[n;h;p;x] `.hb.hb upsert .DEBUG.hb:(p;n;`;.z.N;h;`pong;x) }
 .hb.monh:0#0i;
-.hb.conn:{[] .hb.monh,:(exec {[pr;h;p] @[hopen;hsym `$string[h],":",string[p];{[pr;e] -2"Failed to connect to proc:",string[pr];:0N}[pr]]}'[proc;host;port] from proclist where proc in monlist) except 0N; `.hb.hb upsert select proc,name:`,host,status:`init from proclist where proc in monlist};
+.hb.conn:{[] .hb.monh,:(exec {[pr;h;p] @[hopen;hsym `$string[h],":",string[p];{[pr;e] -2"Failed to connect to proc:",string[pr];:0N}[pr]]}'[proc;host;port] from proclist where proc in monlist) except 0N; `.hb.hb upsert select proc,name:`,sym:`,host,status:`init from proclist where proc in monlist};
 .hb.pingall:{[] neg[.hb.monh]@\:(.hb.ping;.z.P); }
 .hb.check:{[] update status:`timeout from `.hb.hb where (.z.P-timestamp)>0D00:00:30.0;}
 .z.pc:{if[y;.hb.monh:.hb.monh except y]; x@y}@[value;`.z.pc;{{[x]}}]
-.z.ts:{[x] .hb.pingall[];.hb.check[]; }@[value;`.z.pc;{{[x]}}]
+.z.ts:{[x] .hb.pingall[];.hb.check[];};
 \t 2000
 .hb.conn[];
 .sub.conn[];

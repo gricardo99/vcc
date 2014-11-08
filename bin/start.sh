@@ -6,5 +6,5 @@ sleep 1
 q $VCT_WKSP_HOME/src/kdb/common/vct_proc.q -vct-load src/kdb/exch/curlrest/curlexch.q -vct-tick :5010 -p 5013 </dev/null >$VCT_WKSP_LOGS/curlexch.log 2>&1 &
 q $VCT_WKSP_HOME/src/kdb/common/vct_proc.q -vct-load src/kdb/exch/ws/bitstamp.q  -vct-tick :5010 -p 5014 </dev/null >$VCT_WKSP_LOGS/bitstamp.log 2>&1 &
 q $VCT_WKSP_HOME/src/kdb/common/vct_proc.q -vct-load src/kdb/exch/ws/okcoin.q  -vct-tick :5010 -p 5015 </dev/null >$VCT_WKSP_LOGS/okcoin.log 2>&1 &
-q $VCT_WKSP_HOME/src/kdb/common/vct_proc.q -vct-load src/kdb/mon.q  -vct-tick :5010 -p 5016 </dev/null >$VCT_WKSP_LOGS/okcoin.log 2>&1 &
+q $VCT_WKSP_HOME/src/kdb/common/vct_proc.q -vct-load src/kdb/frontend/mon.q  -vct-tick :5010 -p 5016 </dev/null >$VCT_WKSP_LOGS/okcoin.log 2>&1 &
 q $VCT_WKSP_HOME/src/kdb/common/vct_proc.q -vct-load src/kdb/research/tidecalc.q  -vct-tick :5010 -p 5017 </dev/null >$VCT_WKSP_LOGS/tidecalc.log 2>&1 &

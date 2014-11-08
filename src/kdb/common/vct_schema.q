@@ -4,4 +4,4 @@ curltottime:([] time:`timespan$();sym:`g#`symbol$();exch:`$();tottime:`float$();
 arbopts:([]time:`timespan$();sym:`g#`symbol$();buyexch:`$();sellexch:`$();amount:`float$();wbpx:`float$();wspx:`float$();val:`float$();gpnl:`float$();fees:`float$();nroi:`float$();timestamp:`timestamp$());
 fees:([]time:`timespan$();sym:`g#`symbol$();baseccy:`$();exch:`$();drawf:`float$();drawv:`float$();drawmin:`float$();depf:`float$();depv:`float$();depmin:`float$();tradev:`float$();timestamp:`timestamp$());
 heartbeat:([]time:`timespan$();sym:`g#`symbol$();name:`$();host:`$();proc:`$();status:`$();timestamp:`timestamp$());
-tide:([]time:`timespan$();sym:`$();exchp:`$();buypct:`float$();buysz:`float$();sellpct:`$();sellsz:`float$();timestamp:`timestamp$());
+tidecalc:([]time:`timespan$();sym:`$();exchp:`$();buypct:`float$();buysz:`float$();sellpct:`float$();sellsz:`float$();timestamp:`timestamp$());
