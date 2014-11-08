@@ -1,0 +1,8 @@
+proc,host,port
+tick,vct1,5010
+rtd,vct1,5011
+hdb,vct1,5012
+curlexch,vct1,5013
+bitstamp,vct1,5014
+okcoin,vct1,5015
+tidecalc,vct1,5016

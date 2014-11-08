@@ -1,7 +1,7 @@
 exchstats:{[e;sm;x] `curltottime upsert st:(.z.N;sm;e;x;.z.P);
 	.vct.publish[`curltottime;st];
 	};
-maxamt:100000;
+maxamt:5000;
 quoteupsrt:{[exch;sm;bprcs;bszs;aprcs;aszs;exchtm]
 	blmt:((count accumval)-(count accumval where (accumval:(+) scan (*) .' (bprcs ,' bszs))>maxamt));
 	bpx:first bprcs;bsz:first bszs;
@@ -9,6 +9,7 @@ quoteupsrt:{[exch;sm;bprcs;bszs;aprcs;aszs;exchtm]
 	apx:first aprcs;asz:first aszs;
 	 `quote upsert (cols .schema.quote) !  qt:(.z.N;sm;exch;bpx;apx;bsz;asz;blmt#bprcs;almt#aprcs;blmt#bszs;almt#aszs;`int$();`int$();exchtm;.z.P);
 	.vct.publish[`quote;qt];
+	.vct.publish[`heartbeat;(.z.N;sm;exch;`;.vct.host;.vct.proc.z.P)];
 	}
 parseq1:{[exch;sm;x;s] d:.j.k x;
 	exchstats[exch;sm;s];
